@@ -38,4 +38,4 @@ functionality of nutshell.
 ## Example
 
 Here is the source code for a minimal example: [example.qmd](example.qmd)  
-A rendered version can be found [here]().
+A rendered version can be found [here](https://schochastics.quarto.pub/nutshell-expandable-explanations/).
