@@ -8,7 +8,7 @@ You can find more information (and a demo) on the nutshell [webpage](https://nca
 ## Install
 
 ```sh
-quarto install schochastics/quarto-nutshell
+quarto install extension schochastics/quarto-nutshell
 ```
 
 This will install the extension under the `_extensions` subdirectory. If you're using version control, you will want to check in this directory.
