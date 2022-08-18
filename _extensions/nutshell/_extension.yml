@@ -1,0 +1,6 @@
+title: Nutshell expandable explanations
+author: David Schoch
+version: 0.1.0
+contributes:
+  filters:
+    - nutshell.lua

@@ -1,0 +1,30 @@
+---
+title: "Nutshell: Expandable Explanations"
+author: "David Schoch"
+format: html
+filters:
+  - nutshell
+---
+
+
+
+## [:What is Nutshell?](#what-is-nutshell)
+Nutshell is a tool to make "expandable explanations", like this! This lets your readers learn only the details they need, just-in-time, always-in-context.
+
+Unlike links, Nutshell lets you include only the snippet you need, not the whole page. Plus, instead of being lost in a jungle of new tabs, your reader stays on one page, keeping their flow of reading. Even if you interrupt a sentence, Nutshell recaps the sentence afterwards, so your reader never loses context.
+
+You can find more information on the nutshell [webpage](https://ncase.me/nutshell/) 
+
+## Test
+
+This is a senseless paragraph
+
+
+- [:link to senseless paragraph](#test)  
+- [:link to wikipedia article](https://en.wikipedia.org/wiki/Nutshell)
+- [:link to invisible sections](#x-invisible)
+
+## :x invisible
+
+Use `## :x header` to include an invisible secion that can be linked to via nutshell 
+
