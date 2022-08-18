@@ -32,7 +32,8 @@ Note, however, the other webpage needs to also have Nutshell installed, or CORS 
 
 Check out the [interactive demo](https://ncase.me/nutshell/try/) for more help
 or head to the
-[github repo](https://github.com/ncase/nutshell).
+[github repo](https://github.com/ncase/nutshell) to learn about the full
+functionality of nutshell.
 
 ## Example
 
