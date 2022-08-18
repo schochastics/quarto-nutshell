@@ -1,5 +1,7 @@
 ## Nutshell
 
+![](nutshell.gif)
+
 > Nutshell is a tool to make "expandable explanations" This lets your readers learn only the details they need, just-in-time, always-in-context.   
 Unlike links, Nutshell lets you include only the snippet you need, not the whole page. Plus, instead of being lost in a jungle of new tabs, your reader stays on one page, keeping their flow of reading. Even if you interrupt a sentence, Nutshell recaps the sentence afterwards, so your reader never loses context.
 
