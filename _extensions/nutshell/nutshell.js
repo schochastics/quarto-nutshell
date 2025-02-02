@@ -8,7 +8,7 @@
 ██║░╚███║╚██████╔╝░░░██║░░░██████╔╝██║░░██║███████╗███████╗███████╗
 ╚═╝░░╚══╝░╚═════╝░░░░╚═╝░░░╚═════╝░╚═╝░░╚═╝╚══════╝╚══════╝╚══════╝
 
-v1.0.7 - "Baby's First XSS Vulnerability"
+v1.0.8 - "Recursive Wikipedia Rabbithole"
 
 ( NOTE TO SELF: When updating version, remember to edit... )
 ( this js file's "Nutshell.version", include_nutshell.js   )
@@ -127,7 +127,7 @@ Bubble: the box that expands below an expandable, containing a Nutshell Section
     window.Nutshell = {};
 
     // Version! & CDN
-    Nutshell.version = 'v1.0.7';
+    Nutshell.version = 'v1.0.8';
     //Nutshell.cdn = `https://cdn.jsdelivr.net/gh/ncase/nutshell@${Nutshell.version}/nutshell.js`;
     Nutshell.cdn = `https://cdn.jsdelivr.net/gh/ncase/nutshell/nutshell.js`;
 
@@ -580,7 +580,35 @@ Bubble: the box that expands below an expandable, containing a Nutshell Section
             // What punctuation (in this language) signifies the END of a sentence? Note, this is a regex.
             endPunctuation: /[.?!]\s/g
 
-        }
+        },
+        vi: {
+
+            // Button text
+            closeAllNutshells: `đóng tất cả các nutshell`,
+            learnMore: `tìm hiểu thêm về Nutshell`,
+
+            // Nutshell errors...
+            notFoundError: `Ôi không, không thể tìm thấy trang! Kiểm tra lại link:`,
+            wikiError: `Ôi không, có thể Wikipedia bị hư, hoặc trang không tồn tại. Kiểm tra lại link:`,
+            corsError: `Ôi không, trang tồn tại nhưng không cho phép truy cập! Kiểm tra trang đã tải Nutshell hay bật CORS chưa:`,
+            sectionIDError: `Ôi không, không có phần nào được gán ID #[ID]! Kiểm tra lỗi chính tả.`,
+            startTextError: `Ôi không, không có đoạn nào có câu “[start]”! Kiểm tra lỗi chính tả.`,
+
+            // Embed modal!
+            embedStep0: `Bạn có thể nhúng phần này như là phần "giải thích mở rộng" trên website của bạn!
+                         Click để xem thử → [EXAMPLE]`,
+            embedStep1: `Step 1) Copy code này vào phần [HEAD] trong website của bạn: [CODE]`,
+            embedStep2: `Step 2) Trong bài viết của bạn, tạo đường link tới [LINK]
+                         và luôn luôn đặt dấu :hai chấm phía trước đường link,
+                         <a href="#">:như thế này</a>,
+                         để Nutshell biết mở rộng phần này.`,
+            embedStep3: `Step 3) Xong rồi đấy! 🎉`,
+
+            // What punctuation (in this language) should we KEEP after an expandable opens?
+            keepPunctuation: `.,?!)_~'"’”`,
+            // What punctuation (in this language) signifies the END of a sentence? Note, this is a regex.
+            endPunctuation: /[.?!]\s/g
+		},
     };
 
     Nutshell.getLocalizedText = (textID)=>{
@@ -813,7 +841,7 @@ Bubble: the box that expands below an expandable, containing a Nutshell Section
     Nutshell.promisePurifiedHTMLFromURL = (url)=>{
 
         // A promise...
-        return new Promise((resolvePurifiedHTML, rejectPurifiedHTML)=>{
+        return new Promise(async (resolvePurifiedHTML, rejectPurifiedHTML)=>{
 
             // If already in cache, return that.
             if(Nutshell.htmlCache[url]){
@@ -831,17 +859,76 @@ Bubble: the box that expands below an expandable, containing a Nutshell Section
                     articleTitle = decodeURIComponent( splitPath[splitPath.length-1] );
                 // Which language wikipedia? (including Simple...)
                 let domain = urlObject.host.split('.')[0];
-
+                // get section of article, if any
+                let sectionID = urlObject.hash.slice(1);
+                
                 // Fetch lede
                 let resourceParams = {
                     // Request from anywhere, in JSON
                     action: "query", origin: "*", format: "json",
                     // Extract just the lead paragraph & thumbnail
-                    prop: "extracts|pageimages", exintro: "", pithumbsize:500,
+                    prop: "extracts|pageimages|sections", exintro: "", pithumbsize:500,
                     // THIS PAGE
                     titles: articleTitle
                 }
+                // Parse API
+                let params = {
+                    action: "parse", origin: "*", format: "json",
+                    page: articleTitle,
+                    prop: "text|sections"
+                }
                 let resourceQueryString = _objectToURLParams(resourceParams);
+                
+                let parseQueryString = _objectToURLParams(params);
+
+                let parseURL = `https://${domain}.wikipedia.org/w/api.php?${parseQueryString}`
+                let found = false;
+                await fetch(parseURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        const sections = data.parse.sections;
+                        for(let i = 0; i < sections.length; i++){
+                            if(sections[i].anchor === sectionID){
+                                params.section = sections[i].index;
+                                found = true;
+                                break;
+                            }
+                        } 
+                    }
+                );
+
+                if(found){
+                    fetch(`https://${domain}.wikipedia.org/w/api.php?${_objectToURLParams(params)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            let pageHTML = data.parse.text['*'];
+                            // show images
+                            pageHTML = pageHTML.replaceAll("\"//upload.wikimedia.org/", "\"https://upload.wikimedia.org/");
+                            // remove all elements with class editsection
+                            pageHTML = pageHTML.replace(/<span class="mw-editsection">.*?<\/span>/g, "");
+                            // remove all links with title that starts with Edit Section
+                            pageHTML = pageHTML.replace(/<a.*?title="Edit section.*?<\/a>/g, "");
+                            pageHTML = pageHTML.replace(/<span class="mw-editsection-bracket">.*?<\/span>/g, "");
+
+                            // create valid links 
+                            pageHTML = pageHTML.replaceAll(/href="\/wiki/g, `href="https://${domain}.wikipedia.org/wiki`);
+                            
+                            // get all a tags with wiki links and any title and change inner text to have : in front 
+                            // don't touch images
+                            pageHTML = pageHTML.replace(/<a.*?href="https:\/\/.*?\.wikipedia\.org\/wiki\/(.*?)".*?>(.*?)<\/a>/g, (match, p1, p2) => {
+                                // if it's an image, don't touch it
+                                if(p1.includes("File:")){
+                                    return match;
+                                }
+                                return `<a href="https://${domain}.wikipedia.org/wiki/${p1}">:${p2}</a>`;
+                            });
+
+                            Nutshell.htmlCache[url] = pageHTML;
+                            // FULFIL THE PROPHECY
+                            resolvePurifiedHTML( Nutshell.htmlCache[url] );
+
+                        });
+                }else{
                 let resourceURL = `https://${domain}.wikipedia.org/w/api.php?${resourceQueryString}`;
                 fetch(resourceURL)
                     .then(response => response.json())
@@ -863,7 +950,7 @@ Bubble: the box that expands below an expandable, containing a Nutshell Section
                         resolvePurifiedHTML(pageHTML);
 
                     });
-
+                }
                 // (Wait some time before giving up, and telling user)
                 setTimeout(()=>{
                     rejectPurifiedHTML(
@@ -1074,7 +1161,7 @@ Bubble: the box that expands below an expandable, containing a Nutshell Section
             // Get expandable's url & queryString
             let href = expandable.href,
                 splitHref = href.split("#"),
-                url = splitHref[0],
+                url = expandable.href,
                 queryString = splitHref[1];
 
             // The container for the Section... get it, boiiiiii.
